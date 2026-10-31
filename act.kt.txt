@@ -1,0 +1,165 @@
+
+package com.example.ejerciciocompose
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContent {
+            MaterialTheme {
+                PantallaPrincipal()
+            }
+        }
+    }
+}
+
+@Composable
+fun PantallaPrincipal() {
+
+    var mensaje by remember { mutableStateOf("") }
+    var activar by remember { mutableStateOf(false) }
+    var mostrarOpciones by remember { mutableStateOf(false) }
+    var cargando by remember { mutableStateOf(false) }
+    var opcionSeleccionada by remember { mutableStateOf("Kotlin") }
+    var imagenActual by remember { mutableIntStateOf(0) }
+
+    val imagenes = listOf(
+        android.R.drawable.ic_menu_camera,
+        android.R.drawable.ic_menu_gallery,
+        android.R.drawable.ic_menu_compass
+    )
+
+    LaunchedEffect(cargando) {
+        if (cargando) {
+            delay(5000)
+            cargando = false
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+
+        // 4. Icono siempre visible
+        Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = "Estrella",
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Text(
+            text = "Mi aplicación",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+
+        Button(
+            onClick = {
+                mensaje = "Botón presionado"
+                activar = true
+                cargando = true
+
+                // Cambiar a la siguiente imagen
+                imagenActual = (imagenActual + 1) % imagenes.size
+            }
+        ) {
+            Text("Presionar")
+        }
+
+        if (cargando) {
+            CircularProgressIndicator()
+            Text("Cargando...")
+        }
+
+  
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = activar,
+                onCheckedChange = { activar = it }
+            )
+
+            Text("Activar")
+        }
+
+        if (activar) {
+            OutlinedTextField(
+                value = mensaje,
+                onValueChange = { mensaje = it },
+                label = { Text("Mensaje") },
+                readOnly = true,
+                singleLine = true
+            )
+        }
+
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Mostrar opciones")
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Switch(
+                checked = mostrarOpciones,
+                onCheckedChange = { mostrarOpciones = it }
+            )
+        }
+
+  
+        if (mostrarOpciones) {
+
+            Text("Selecciona un lenguaje:")
+
+            val opciones = listOf("Kotlin", "Java", "C++")
+
+            opciones.forEach { opcion ->
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    RadioButton(
+                        selected = opcionSeleccionada == opcion,
+                        onClick = {
+                            opcionSeleccionada = opcion
+                            mensaje = "Has seleccionado $opcion"
+                        }
+                    )
+
+                    Text(opcion)
+                }
+            }
+        }
+
+
+        Text("Imagen actual:")
+
+        Image(
+            painter = painterResource(id = imagenes[imagenActual]),
+            contentDescription = "Imagen número ${imagenActual + 1}",
+            modifier = Modifier.size(100.dp)
+        )
+    }
+}
